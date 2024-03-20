@@ -1,14 +1,9 @@
 name: Release build
 
-# on:
-#   push:
-#     tags:
-#       - "v*"
-
 on:
   push:
-    branches:
-      - build-cln-plugin
+    tags:
+      - "v*"
 
 env:
   LSPD_GO_VERSION: 1.21.0
@@ -38,20 +33,24 @@ jobs:
         with:
           go-version: "${{ env.LSPD_GO_VERSION }}"
 
-      - name: build lspd
+      - name: get tag
+        run: |
+          echo "TAG=$(git describe --tags --dirty)" >> $GITHUB_ENV
+
+      - name: build lspd plugin
         env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
-        run: make release-all
+        run: make release-plugin
 
       - name: zip lspd artifacts
-        run: tar -czvf lspd-test-${{ matrix.os }}-${{ matrix.arch }}.tar.gz lspd lspd_cln_plugin
+        run: tar -czvf lspd-${{ env.TAG }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz lspd_cln_plugin
 
       - name: upload lspd artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: lspd-test-${{ matrix.os }}-${{ matrix.arch }}
-          path: lspd-test-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
+          name: lspd-${{ env.TAG }}-${{ matrix.os }}-${{ matrix.arch }}
+          path: lspd-${{ env.TAG }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
 
   release:
     needs:
