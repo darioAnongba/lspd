@@ -29,6 +29,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y make
+
       - name: setup go ${{ env.LSPD_GO_VERSION }}
         uses: actions/setup-go@v5
         with:
